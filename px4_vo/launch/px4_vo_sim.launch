@@ -1,0 +1,33 @@
+<launch>
+    <arg name="fcu_url" default="udp://:14540@192.168.1.36:14557" />
+
+    <node name="proc" ns="iris/camera1" pkg="image_proc" type="image_proc" args="">
+    </node>
+
+    <!--node name="mavros" pkg="mavros" type="mavros_node" output="screen">
+        <remap from="mavros/position/vision" to="/msf_core/pose" />
+        <param name="fcu_url" value="$(arg fcu_url)" />
+
+        <param name="conn_heartbeat" value="5.0" />
+        <param name="conn_timeout" value="10.0" />
+        <param name="position/vision/pose_with_covariance" value="true" />
+
+    </node-->
+
+    <node pkg="svo_ros" type="vo" name="svo" clear_params="true" output="screen">
+        <param name="cam_topic" value="/iris/camera1/image_mono" type="str" />
+        <rosparam file="$(find px4_vo)/param/camera_pinhole.yaml" />
+        <rosparam file="$(find px4_vo)/param/px4_vo.yaml" />
+        <param name="accept_console_user_input" value="true" />
+        <param name="publish_world_in_cam_frame" value="false" />
+        <param name="init_rx" value="3.1415289878" />
+
+    </node>
+
+    <!--node name="msf_pose_sensor" pkg="msf_updates" type="pose_sensor" clear_params="true" output="screen">
+        <remap from="msf_core/imu_state_input" to="/mavros/imu/data" />
+        <remap from="msf_updates/pose_with_covariance_input" to="/svo/pose" />
+        <rosparam file="$(find px4_vo)/param/px4_svo_sensor_fix.yaml"/>
+    </node-->
+
+</launch>

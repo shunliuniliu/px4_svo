@@ -1,0 +1,167 @@
+<?xml version="1.0"?>
+
+<robot name="iris" xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:include filename="$(arg rotors_description_dir)/urdf/component_snippets.xacro" />
+  <!-- Instantiate iris "mechanics" -->
+  <xacro:include filename="$(arg rotors_description_dir)/urdf/iris.xacro" />
+
+  <xacro:if value="$(arg enable_mavlink_interface)">
+  <!-- Instantiate mavlink telemetry interface. -->
+  <xacro:mavlink_interface_macro
+    namespace="${namespace}"
+    imu_sub_topic="imu"
+    >
+  </xacro:mavlink_interface_macro>
+  </xacro:if>
+
+  <!-- Mount an ADIS16448 IMU. -->
+  <xacro:imu_plugin_macro
+    namespace="${namespace}"
+    imu_suffix=""
+    parent_link="base_link"
+    imu_topic="imu"
+    mass_imu_sensor="0.015"
+    gyroscope_noise_density="0.0003394"
+    gyroscopoe_random_walk="0.000038785"
+    gyroscope_bias_correlation_time="1000.0"
+    gyroscope_turn_on_bias_sigma="0.0087"
+    accelerometer_noise_density="0.004"
+    accelerometer_random_walk="0.006"
+    accelerometer_bias_correlation_time="300.0"
+    accelerometer_turn_on_bias_sigma="0.1960"
+  >
+    <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </xacro:imu_plugin_macro>
+
+  <xacro:if value="$(arg enable_ground_truth)">
+    <!-- Mount an IMU providing ground truth. -->
+    <xacro:imu_plugin_macro
+      namespace="${namespace}"
+      imu_suffix="gt"
+      parent_link="base_link"
+      imu_topic="ground_truth/imu"
+      mass_imu_sensor="0.00001"
+      gyroscope_noise_density="0.0"
+      gyroscopoe_random_walk="0.0"
+      gyroscope_bias_correlation_time="1000.0"
+      gyroscope_turn_on_bias_sigma="0.0"
+      accelerometer_noise_density="0.0"
+      accelerometer_random_walk="0.0"
+      accelerometer_bias_correlation_time="300.0"
+      accelerometer_turn_on_bias_sigma="0.0"
+    >
+      <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
+      <origin xyz="0 0 0" rpy="0 0 0" />
+    </xacro:imu_plugin_macro>
+
+    <!-- Mount a generic odometry sensor providing ground truth. -->
+    <xacro:odometry_plugin_macro
+      namespace="${namespace}/ground_truth"
+      odometry_sensor_suffix="gt"
+      parent_link="base_link"
+      pose_topic="pose"
+      pose_with_covariance_topic="pose_with_covariance"
+      position_topic="position"
+      transform_topic="transform"
+      odometry_topic="odometry"
+      parent_frame_id="world"
+      mass_odometry_sensor="0.00001"
+      measurement_divisor="1"
+      measurement_delay="0"
+      unknown_delay="0.0"
+      noise_normal_position="0 0 0"
+      noise_normal_quaternion="0 0 0"
+      noise_normal_linear_velocity="0 0 0"
+      noise_normal_angular_velocity="0 0 0"
+      noise_uniform_position="0 0 0"
+      noise_uniform_quaternion="0 0 0"
+      noise_uniform_linear_velocity="0 0 0"
+      noise_uniform_angular_velocity="0 0 0"
+      enable_odometry_map="false"
+      odometry_map=""
+      image_scale=""
+    >
+      <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" /> <!-- [kg.m^2] [kg.m^2] [kg.m^2] [kg.m^2] [kg.m^2] [kg.m^2] -->
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    </xacro:odometry_plugin_macro>
+  </xacro:if>
+
+  <xacro:if value="$(arg enable_logging)">
+    <!-- Instantiate a logger -->
+    <xacro:bag_plugin_macro
+      namespace="${namespace}"
+      bag_file="$(arg log_file)"
+      rotor_velocity_slowdown_sim="${rotor_velocity_slowdown_sim}"
+    >
+    </xacro:bag_plugin_macro>
+  </xacro:if>
+
+  <joint name="camera_joint" type="fixed">
+      <origin xyz="0 0 ${-1/2*body_height}" rpy="0 1.57 0"/>
+      <parent link="base_link"/>
+      <child link="camera_link"/>
+  </joint>
+
+  <!-- Camera -->
+  <link name="camera_link">
+      <collision>
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+          <geometry>
+              <box size="0.05 0.05 0.05"/>
+          </geometry>
+      </collision>
+
+      <visual>
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+          <geometry>
+              <box size="0.05 0.05 0.05"/>
+          </geometry>
+      </visual>
+
+      <inertial>
+          <mass value="1e-5" />
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+          <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+      </inertial>
+  </link>
+
+  <!-- camera -->
+  <gazebo reference="camera_link">
+      <sensor type="camera" name="camera1">
+          <update_rate>30.0</update_rate>
+          <camera name="head">
+              <horizontal_fov>1.3962634</horizontal_fov>
+              <image>
+                  <width>800</width>
+                  <height>600</height>
+                  <format>R8G8B8</format>
+              </image>
+              <clip>
+                  <near>0.02</near>
+                  <far>300</far>
+              </clip>
+              <noise>
+                  <type>gaussian</type>
+                  <mean>0.0</mean>
+                  <stddev>0.007</stddev>
+              </noise>
+          </camera>
+          <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+              <alwaysOn>true</alwaysOn>
+              <updateRate>0.0</updateRate>
+              <cameraName>iris/camera1</cameraName>
+              <imageTopicName>image_raw</imageTopicName>
+              <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+              <frameName>camera_link</frameName>
+              <hackBaseline>0.07</hackBaseline>
+              <distortionK1>0.0</distortionK1>
+              <distortionK2>0.0</distortionK2>
+              <distortionK3>0.0</distortionK3>
+              <distortionT1>0.0</distortionT1>
+              <distortionT2>0.0</distortionT2>
+          </plugin>
+      </sensor>
+  </gazebo>
+</robot>
+

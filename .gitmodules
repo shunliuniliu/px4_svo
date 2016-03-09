@@ -1,0 +1,18 @@
+[submodule "rpg_vikit"]
+	path = rpg_vikit
+	url = https://github.com/uzh-rpg/rpg_vikit.git
+[submodule "rpg_svo"]
+	path = rpg_svo
+	url = https://github.com/uzh-rpg/rpg_svo.git
+[submodule "asctec_mav_framework"]
+	path = asctec_mav_framework
+	url = https://github.com/ethz-asl/asctec_mav_framework
+[submodule "catkin_simple"]
+	path = catkin_simple
+	url = https://github.com/ethz-asl/catkin_simple
+[submodule "glog_catkin"]
+	path = glog_catkin
+	url = https://github.com/ethz-asl/glog_catkin
+[submodule "ethzasl_msf"]
+	path = ethzasl_msf
+	url = https://github.com/ethz-asl/ethzasl_msf
