@@ -3,7 +3,6 @@
 
     <node name="proc" ns="iris/camera1" pkg="image_proc" type="image_proc" args="">
     </node>
-
     <!--node name="mavros" pkg="mavros" type="mavros_node" output="screen">
         <remap from="mavros/position/vision" to="/msf_core/pose" />
         <param name="fcu_url" value="$(arg fcu_url)" />
@@ -16,7 +15,7 @@
 
     <node pkg="svo_ros" type="vo" name="svo" clear_params="true" output="screen">
         <param name="cam_topic" value="/iris/camera1/image_mono" type="str" />
-        <rosparam file="$(find px4_vo)/param/camera_pinhole.yaml" />
+        <rosparam file="$(find px4_vo)/param/camera_gazebo.yaml" />
         <rosparam file="$(find px4_vo)/param/px4_vo.yaml" />
         <param name="accept_console_user_input" value="true" />
         <param name="publish_world_in_cam_frame" value="false" />
